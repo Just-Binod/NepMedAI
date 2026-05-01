@@ -83,7 +83,7 @@ def get_context(inputs: dict) -> dict:
     results = vector_store.similarity_search(query=query)
  
     context = ""
-    sources = []  # CHANGE 2: collect source info from each retrieved chunk
+    sources = []  #  collect source info from each retrieved chunk
  
     for doc in results:
         context += doc.page_content + "\n"
@@ -154,7 +154,7 @@ llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2)
  
 #  Two-step ask function so we can access sources separately 
  
-# CHANGE 3: We call get_context first to grab sources, then run the chain.
+#  We call get_context first to grab sources, then run the chain.
 #            Can't extract sources mid-pipe, so we split into two steps.
  
 def ask(question: str):
@@ -173,86 +173,6 @@ def ask(question: str):
 
 
 
-
-
-# #  Streamlit UI 
-
-# st.set_page_config(page_title="NepMedAI")
-# st.title(" NepMedAI : a bilingual Medical Assistant")
-# st.caption("Ask health questions in Nepali or English")
-
-# # Keep chat history across reruns
-
-# if "messages" not in st.session_state:
-#     st.session_state.messages = []
-
-# # Show previous messages
-# for msg in st.session_state.messages:
-#     with st.chat_message(msg["role"]):
-#         st.write(msg["content"])
-
-# # Chat input
-# if question := st.chat_input("Ask a health question..."):
-#     # Show s user message
-#     st.session_state.messages.append({"role": "user", "content": question})
-#     with st.chat_message("user"):
-#         st.write(question)
-
-#     # Get and show bot response
-#     with st.chat_message("assistant"):
-#         with st.spinner("Searching medical knowledge..."):
-#             response = rag_chain.invoke({"question": question})
-#         st.write(response)
-
-#     st.session_state.messages.append({"role": "assistant", "content": response})
-
-
-# //////
-
-
-# # ─ Streamlit UI 
- 
-# st.set_page_config(page_title="NepMedAI")
-# st.title(" NepMedAI — Medical Assistant")
-# st.caption("Ask health questions in Nepali or English")
- 
-# if "messages" not in st.session_state:
-#     st.session_state.messages = []
- 
-# # Show previous messages
-# for msg in st.session_state.messages:
-#     with st.chat_message(msg["role"]):
-#         st.write(msg["content"])
-#         # CHANGE 4: Re-show sources in chat history
-#         if msg.get("sources"):
-#             with st.expander(" Sources referred"):
-#                 for s in msg["sources"]:
-#                     st.write(s)
- 
-# # Chat input
-# if question := st.chat_input("Ask a health question..."):
-#     st.session_state.messages.append({"role": "user", "content": question})
-#     with st.chat_message("user"):
-#         st.write(question)
- 
-#     with st.chat_message("assistant"):
-#         with st.spinner("Searching medical knowledge..."):
-#             answer, sources = ask(question)
- 
-#         st.write(answer)
- 
-#         # CHANGE 5: Show sources in a collapsible expander below the answer
-#         if sources:
-#             with st.expander(" Sources referred"):
-#                 for s in sources:
-#                     st.write(s)
- 
-#     st.session_state.messages.append({
-#         "role": "assistant",
-#         "content": answer,
-#         "sources": sources
-#     })
- 
 
 
 
@@ -299,7 +219,7 @@ if question := st.chat_input("Ask a health question..."):
  
         st.write(answer)
  
-        # CHANGE 5: Show sources in a collapsible expander below the answer
+        #  Show sources in a collapsible expander below the answer
         if sources:
             with st.expander(" Sources referred"):
                 for s in sources:
