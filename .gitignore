@@ -10,8 +10,8 @@ wheels/
 # Virtual environments
 .venv
 .env
-v4_medBot.py
-v3_medBot.py
+
+
 medBot.py
 
 # Byte-compiled / optimized / DLL files
