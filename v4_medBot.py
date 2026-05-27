@@ -1,21 +1,13 @@
 import warnings
 import logging
-import sys
 from pathlib import Path
+import os
 
-warnings.filterwarnings("ignore")                        # suppress transformers __path__ warnings
-logging.getLogger("transformers").setLevel(logging.ERROR) # only show real errors, not warnings
+warnings.filterwarnings("ignore")
+logging.getLogger("transformers").setLevel(logging.ERROR)
 
-try:
-    from dotenv import load_dotenv
-except ModuleNotFoundError as exc:
-    raise ModuleNotFoundError(
-        "dotenv is not installed in the Python interpreter running Streamlit. "
-        "Run this app with the project virtual environment, for example: "
-        "`.venv/bin/streamlit run v4_medBot.py` or `uv run streamlit run v4_medBot.py`.") from exc
-
-dotenv_path = Path(__file__).resolve().parent / ".env"
-load_dotenv(dotenv_path=dotenv_path)
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -25,42 +17,66 @@ from langchain_chroma import Chroma
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 import streamlit as st
-import os
 
 
-# ── Load or build vector store ──────────────────────────────────────────────────
+# ── Load or build vector store (cached resource) ────────────────────────────────
 
 @st.cache_resource
 def load_vectorstore():
+    """Load or build Chroma DB with resilience to corruption."""
     embeddings = HuggingFaceEmbeddings(
         model_name="jangedoo/all-MiniLM-L6-v2-nepali",
         model_kwargs={'device': 'cpu'}
     )
-    if os.path.exists("./chroma_db_nepali"):
-        return Chroma(persist_directory="./chroma_db_nepali", embedding_function=embeddings)
-
+    
+    db_path = "./chroma_db_nepali"
+    if os.path.exists(db_path) and any(Path(db_path).iterdir()):
+        try:
+            return Chroma(persist_directory=db_path, embedding_function=embeddings)
+        except Exception as e:
+            # Recover from corrupted DB by moving aside and rebuilding
+            import shutil
+            import time
+            backup = f"./chroma_db_nepali_broken_{int(time.time())}"
+            try:
+                Path(db_path).rename(backup)
+            except Exception:
+                try:
+                    shutil.move(db_path, backup)
+                except Exception:
+                    pass
+            logging.warning(f"Corrupted Chroma DB moved to {backup}; rebuilding...")
+    
     loader = DirectoryLoader("data/", glob="**/*.pdf", loader_cls=PyPDFLoader, show_progress=True)
     docs = loader.load()
     splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=150)
-    splitted_data = splitter.split_documents(docs)
-    return Chroma.from_documents(documents=splitted_data, embedding=embeddings, persist_directory="./chroma_db_nepali")
+    chunks = splitter.split_documents(docs)
+    
+    return Chroma.from_documents(documents=chunks, embedding=embeddings, persist_directory=db_path)
 
 
-# ── Context retrieval ───────────────────────────────────────────────────────────
+# ── Context retrieval (cached) ──────────────────────────────────────────────────
 
 vector_store = load_vectorstore()
 
-def get_context(query: str):
-    results = vector_store.similarity_search(query=query)
-    context = ""
+@st.cache_data(ttl=3600)
+def get_context(query: str, top_k: int = 4):
+    """Retrieve context from knowledge base with caching."""
+    if vector_store is None:
+        return "", []
+    results = vector_store.similarity_search(query=query, k=top_k)
+    context_parts = []
     sources = []
     for doc in results:
-        context += doc.page_content + "\n"
+        text = doc.page_content.strip()
+        if text:
+            context_parts.append(text)
         book_name = os.path.basename(doc.metadata.get("source", "Unknown"))
         page = doc.metadata.get("page", "?")
         entry = f"{book_name} — p.{page}"
         if entry not in sources:
             sources.append(entry)
+    context = "\n\n".join(context_parts)
     return context, sources
 
 
@@ -98,8 +114,8 @@ llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.2)
 
 # ── Ask function ────────────────────────────────────────────────────────────────
 
-def ask(question: str, history: list):
-    context, sources = get_context(question)
+def ask(question: str, history: list, top_k: int = 4):
+    context, sources = get_context(question, top_k=top_k)
 
     # Build history string from last 6 messages (3 turns)
     recent = history[-6:]
@@ -330,7 +346,7 @@ if question := st.chat_input("Type your health question here... / यहाँ �
     with st.chat_message("assistant"):
         with st.spinner("Searching knowledge base..."):
             try:
-                answer, sources = ask(question, st.session_state.messages)
+                answer, sources = ask(question, st.session_state.messages, top_k=4)
             except Exception as e:
                 error_str = str(e)
                 # Print real error to terminal only — never shown to users
