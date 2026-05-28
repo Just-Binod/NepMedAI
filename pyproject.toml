@@ -1,9 +1,30 @@
 [project]
+<<<<<<< HEAD
 name = "nep-med"
+=======
+name = "ai-ml-nepmedai-proj"
+>>>>>>> e983efafda37756c9525ea68b2ce3880804165b7
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+<<<<<<< HEAD
     "langchain-google-genai>=4.2.3",
+=======
+    "google-ai-generativelanguage>=0.11.0",
+    "langchain>=1.2.15",
+    "langchain-chroma>=1.1.0",
+    "langchain-community>=0.4.1",
+    "langchain-gemini>=0.1.1",
+    "langchain-huggingface>=1.2.2",
+    "langchain-openai>=1.2.1",
+    "langchain-text-splitters>=1.1.2",
+    "protobuf>=6.33.6",
+    "pypdf>=6.10.2",
+    "python-dotenv>=1.2.2",
+    "streamlit>=1.56.0",
+    "torchvision>=0.25.0",
+    "unstructured[pdf]>=0.22.23",
+>>>>>>> e983efafda37756c9525ea68b2ce3880804165b7
 ]
