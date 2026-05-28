@@ -149,7 +149,17 @@ Question: {question}"""
 
 #  LLM 
  
-llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2)
+google_api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
+if not google_api_key:
+    raise RuntimeError(
+        "Missing Gemini API key. Set GOOGLE_API_KEY or GEMINI_API_KEY in your environment or .env file."
+    )
+
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    temperature=0.2,
+    api_key=google_api_key,
+)
  
  
 #  Two-step ask function so we can access sources separately 
