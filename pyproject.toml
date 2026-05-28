@@ -3,7 +3,6 @@
 name = "nep-med"
 
 name = "ai-ml-nepmedai-proj"
- e983efafda37756c9525ea68b2ce3880804165b7
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -27,5 +26,4 @@ dependencies = [
     "streamlit>=1.56.0",
     "torchvision>=0.25.0",
     "unstructured[pdf]>=0.22.23",
- e983efafda37756c9525ea68b2ce3880804165b7
 ]
