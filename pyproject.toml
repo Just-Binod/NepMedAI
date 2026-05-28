@@ -1,29 +1,15 @@
 [project]
- 
 name = "nep-med"
-
-name = "ai-ml-nepmedai-proj"
 version = "0.1.0"
-description = "Add your description here"
+description = "Medical Bot using LangChain and Google Gemini"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.11"
 dependencies = [
- 
     "langchain-google-genai>=4.2.3",
-    "langchain-google-genai",
-
-    "google-ai-generativelanguage>=0.11.0",
-    "langchain>=1.2.15",
-    "langchain-chroma>=1.1.0",
-    "langchain-community>=0.4.1",
-    "langchain-gemini>=0.1.1",
-    "langchain-huggingface>=1.2.2",
-    "langchain-openai>=1.2.1",
-    "langchain-text-splitters>=1.1.2",
-    "protobuf>=6.33.6",
-    "pypdf>=6.10.2",
-    "python-dotenv>=1.2.2",
-    "streamlit>=1.56.0",
-    "torchvision>=0.25.0",
-    "unstructured[pdf]>=0.22.23",
+    "langchain-community",
+    "langchain-text-splitters",
+    "langchain-huggingface",
+    "langchain-chroma",
+    "langchain-core",
+    "streamlit",
 ]
